@@ -25,6 +25,7 @@ def chack_password(password):
         return True
     else:
         return False
+    ewwedd
 print(chack_password(password))
 print(chack_password(password2))
 print(chack_password(password3))
