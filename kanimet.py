@@ -1,1 +1,1 @@
-print("deid is world")
+print("dead is world")
