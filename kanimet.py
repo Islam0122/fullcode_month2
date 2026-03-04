@@ -1,0 +1,1 @@
+print("dead is world")
