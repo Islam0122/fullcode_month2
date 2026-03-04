@@ -1,5 +1,0 @@
-
-islam
-islam
-islam
-islam
