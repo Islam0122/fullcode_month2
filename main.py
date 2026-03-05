@@ -15,9 +15,16 @@ dp = Dispatcher()
 @dp.message(Command('start'))
 async def start_command(message: Message):
     await message.answer_photo(
-        photo=FSInputFile("./img.png"),
+        photo=FSInputFile("img2.png"),
         caption="👋 Добро пожаловать в Finance Bot!\n\n"
         "Этот бот поможет учитывать доходы и расходы.",
+    )
+@dp.message(Command('help'))
+async def help_command(message: Message):
+    await message.answer_photo(
+        photo=FSInputFile("./img2.png"),
+        caption="Я помогу вам рассчитать ваши расходы "
+
     )
 
 async def main():
