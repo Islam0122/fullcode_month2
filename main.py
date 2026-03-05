@@ -38,10 +38,11 @@ async def start_command(message: Message):
 @dp.message(Command('help'))
 async def start_command(message: Message):
     await message.answer_photo(
-        photo=FSInputFile("./img.png"),
-        caption="👋 Чем тебе помочь?")
+        photo=FSInputFile("./img2.png"),
+        caption="👋 Чем тебе помочь?"
+    )
 
-@dp.message(Command('help'))
+@dp.message(Command('help2'))
 async def help_command(message: Message):
     await message.answer_photo(
         photo=FSInputFile("./img2.png"),
