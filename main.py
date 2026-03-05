@@ -19,6 +19,18 @@ async def start_command(message: Message):
         caption="👋 Добро пожаловать в Finance Bot!\n\n"
         "Этот бот поможет учитывать доходы и расходы.",
     )
+@dp.message(Command('about_bot'))
+async def help_command(message: Message):
+    await message.answer(f"о нашем боте он умеет")
+    await message.answer_photo(
+        photo=FSInputFile("./bot.png"),
+        caption="Он умеет разный мусор",
+    )
+
+
+
+
+
 
 async def main():
     await dp.start_polling(bot)
