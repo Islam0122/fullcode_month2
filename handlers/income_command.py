@@ -31,6 +31,11 @@ async def income_command2(message: CallbackQuery,state: FSMContext):
 
 @router_income.message(IncomeStates.amount)
 async def income_command2(message: Message,state: FSMContext):
+    if message.text.isalnum():
+        print("True")
+    else:
+        print("False")
+
     await state.update_data(amount=message.text)
     await message.answer("Введите описание дохода:")
     await state.set_state(IncomeStates.description)
