@@ -1,10 +1,17 @@
 from aiogram.types import (ReplyKeyboardMarkup,
                            KeyboardButton, ReplyKeyboardRemove)
+from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
-start_keyboard =  ReplyKeyboardMarkup(keyboard=[
-    [KeyboardButton(text="/start"),
-     KeyboardButton(text="/help"),
-    KeyboardButton(text="/about")],
-    [KeyboardButton(text="/contact")],
-    [KeyboardButton(text="/help")],
-])
+def cancel_kb():
+    builder = ReplyKeyboardBuilder()
+    builder.add(KeyboardButton(text="❌ Отменить"))
+    return builder.as_markup(resize_keyboard=True)
+
+def confirm_kb():
+    builder = ReplyKeyboardBuilder()
+    builder.add(
+        KeyboardButton(text="✅ Подтвердить"),
+        KeyboardButton(text="❌ Отменить")
+    )
+    builder.adjust(2)
+    return builder.as_markup(resize_keyboard=True)

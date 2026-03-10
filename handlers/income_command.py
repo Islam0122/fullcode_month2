@@ -1,12 +1,12 @@
 from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message,FSInputFile,CallbackQuery
-from aiogram.fsm.state import StatesGroup,State
-from aiogram.utils.keyboard import ReplyKeyboardBuilder
-from aiogram.types import KeyboardButton
-
+from aiogram.types import Message, CallbackQuery
+from aiogram.fsm.state import StatesGroup, State
+from keyboards.reply_keyboards import cancel_kb,confirm_kb
+from aiogram.types import  ReplyKeyboardRemove
 router_income = Router()
+
 
 class IncomeStates(StatesGroup):
     amount = State()
@@ -14,67 +14,89 @@ class IncomeStates(StatesGroup):
     confirmed = State()
 
 @router_income.message(Command("cancel"))
-async def cancel(message: Message,state: FSMContext):
-        await message.answer("❌ Отменено")
-        await state.clear()
-        return
+@router_income.message(F.text == "❌ Отменить")
+async def cancel(message: Message, state: FSMContext):
+    await message.answer("❌ Действие отменено.")
+    await state.clear()
 
-@router_income.message(F.text == 'Добавить доход')
-async def income_command1(message: Message,state: FSMContext):
-    await message.answer("Введите сумму дохода:")
+@router_income.message(F.text == "Добавить доход")
+async def income_start(message: Message, state: FSMContext):
+    await message.answer(
+        "💰 Введите сумму дохода:",
+        reply_markup=cancel_kb()
+    )
     await state.set_state(IncomeStates.amount)
+
 
 @router_income.callback_query(F.data == "add")
-async def income_command2(message: CallbackQuery,state: FSMContext):
-    await message.message.answer("Введите сумму дохода:")
+async def income_callback(callback: CallbackQuery, state: FSMContext):
+    await callback.message.answer(
+        "💰 Введите сумму дохода:",
+        reply_markup=cancel_kb()
+    )
     await state.set_state(IncomeStates.amount)
+    await callback.answer()
+
 
 @router_income.message(IncomeStates.amount)
-async def income_command2(message: Message,state: FSMContext):
-    if message.text.isalnum():
-        print("True")
-    else:
-        print("False")
+async def income_amount(message: Message, state: FSMContext):
+
+    if message.text == "❌ Отменить":
+        await cancel(message, state)
+        return
+
+    if not message.text.isdigit():
+        await message.answer("⚠️ Пожалуйста, введите **только число**.\nНапример: 5000")
+        return
 
     await state.update_data(amount=message.text)
-    await message.answer("Введите описание дохода:")
+
+    await message.answer(
+        "📝 Введите описание дохода:",
+        reply_markup=cancel_kb()
+    )
+
     await state.set_state(IncomeStates.description)
 
+
 @router_income.message(IncomeStates.description)
-async def income_command3(message: Message,state: FSMContext):
+async def income_description(message: Message, state: FSMContext):
+
+    if message.text == "❌ Отменить":
+        await cancel(message, state)
+        return
+
     await state.update_data(description=message.text)
 
     data = await state.get_data()
 
-    text = f"""
-Подтвердите доход
-Сумма: {data['amount']}
-Описание: {data['description']}
-"""
-
-    builder = ReplyKeyboardBuilder()
-    builder.add(
-        KeyboardButton(text="✅ Подтвердить"),
-        KeyboardButton(text="❌ Отменить")
+    text = (
+        "📊 Подтвердите добавление дохода:\n\n"
+        f"💰 Сумма: {data['amount']}\n"
+        f"📝 Описание: {data['description']}\n\n"
+        "Подтвердить?"
     )
 
-    builder.adjust(2, 2, 1)
+    await message.answer(text, reply_markup=confirm_kb())
 
-    main_menu = builder.as_markup(resize_keyboard=True)
-
-    await message.answer(text,reply_markup=main_menu)
     await state.set_state(IncomeStates.confirmed)
 
+
 @router_income.message(IncomeStates.confirmed)
-async def income_command4(message: Message,state: FSMContext):
-    if message.text == "❌ Отменить" :
-        await message.answer("❌ Отменено")
-        await state.clear()
+async def income_confirm(message: Message, state: FSMContext):
+
+    if message.text == "❌ Отменить":
+        await cancel(message, state)
         return
+
+    if message.text != "✅ Подтвердить":
+        await message.answer("Пожалуйста, выберите кнопку ниже.")
+        return
+
     data = await state.get_data()
     user_id = message.from_user.id
-    """ db save"""
-    print(data)
-    await message.answer("✅ Доход сохранён")
-    await state.clear()
+    print(user_id, data)
 
+    await message.answer("✅ Доход успешно сохранён.", reply_markup=ReplyKeyboardRemove())
+
+    await state.clear()
