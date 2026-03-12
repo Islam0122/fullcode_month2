@@ -1,28 +1,34 @@
-import sqlite3
+import os
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-conn  = sqlite3.connect('finance.db')
-cursor = conn.cursor()
-
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS users (
-id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-telegram_id INTEGER NOT NULL,
-username TEXT NOT NULL,
-created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)''')
-conn.commit()
-
-def add_user(telegram_id, username):
-    cursor.execute('''
-    INSERT INTO users (telegram_id, username)
-    VALUES (?, ?)
-    ''', (telegram_id, username))
-    conn.commit()
+from .model import Base
 
 
-def get_user_by_telegram_id(telegram_id):
-    cursor.execute('''
-    SELECT username FROM users WHERE telegram_id = ?
-    ''', (telegram_id,))
-    user = cursor.fetchone()
-    return user
+# Создаем асинхронный engine для подключения к базе данных
+# Строка подключения берется из переменной окружения DB_LITE
+# echo=True — выводит все SQL запросы в консоль (удобно для разработки)
+engine = create_async_engine(os.getenv('DB_LITE'), echo=True)
 
+
+# Создаем фабрику сессий (session maker)
+# Через нее будут создаваться новые сессии для работы с базой данных
+session_maker = async_sessionmaker(
+    bind=engine,                 # привязываем к нашему engine
+    class_=AsyncSession,         # используем асинхронную сессию
+    expire_on_commit=False       # объекты не "очищаются" после commit
+)
+
+
+# Функция для создания всех таблиц в базе данных
+# Берет все модели, которые наследуются от Base
+# и создает соответствующие таблицы
+async def create_db():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+
+# Функция для удаления всех таблиц из базы данных
+# Используется обычно только при тестировании или полной очистке базы
+async def drop_db():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
