@@ -7,6 +7,7 @@ from .model import Base
 # Создаем асинхронный engine для подключения к базе данных
 # Строка подключения берется из переменной окружения DB_LITE
 # echo=True — выводит все SQL запросы в консоль (удобно для разработки)
+# in .env --> DB_LITE=sqlite+aiosqlite:///db.sqlite3
 engine = create_async_engine(os.getenv('DB_LITE'), echo=True)
 
 
