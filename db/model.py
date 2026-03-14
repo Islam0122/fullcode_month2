@@ -26,7 +26,6 @@ class User(TimestampMixin, Base):
     username: Mapped[str] = mapped_column(String(255))  # Username пользователя Telegram
     transactions: Mapped[list["Transaction"]] = relationship(back_populates="user") # Связь: один пользователь может иметь много транзакций
 
-
 # Модель транзакций (доходы / расходы)
 class Transaction(TimestampMixin, Base):
     __tablename__ = "transactions"
@@ -36,4 +35,21 @@ class Transaction(TimestampMixin, Base):
     amount: Mapped[int] = mapped_column(Integer) # Сумма транзакции
     category: Mapped[str | None] = mapped_column(String(255)) # Категория расхода или дохода (может быть пустой)
     description: Mapped[str | None] = mapped_column(String(255)) # Описание транзакции (например: "обед", "зарплата")
-    user: Mapped["User"] = relationship(back_populates="transactions") # Связь с пользователем позволяет получить пользователя из транзакции
+    user: Mapped["User"] = relationship(back_populates="transactions")
+
+class Question(TimestampMixin, Base):
+    __tablename__ = "questions_tezt"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    question: Mapped[str] = mapped_column(String(255))
+    option_a : Mapped[str] = mapped_column(String(255))
+    option_b : Mapped[str] = mapped_column(String(255))
+    option_c : Mapped[str] = mapped_column(String(255))
+    option_d : Mapped[str] = mapped_column(String(255))
+    correct: Mapped[str] = mapped_column(String(255))
+
+class UserStat(TimestampMixin, Base):
+    __tablename__ = "user_stats"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    telegram_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    fullname : Mapped[str] = mapped_column(String(255))
+    score: Mapped[int] = mapped_column(Integer)

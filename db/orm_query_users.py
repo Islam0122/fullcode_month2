@@ -1,8 +1,8 @@
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from .model import User
+import asyncio
+from .model import User, Question
 
 """
 C Create
@@ -47,3 +47,17 @@ async def orm_add_user(session: AsyncSession, telegram_id: int, username: str):
     except IntegrityError:
         await session.rollback()
         return None
+
+async  def add_question(session: AsyncSession, question, option_a, option_b, option_c, option_d,correct):
+    new_question = Question(
+        question=question,
+        option_a=option_a,
+        option_b=option_b,
+        option_c=option_c,
+        option_d=option_d,
+        correct=correct
+    )
+    session.add(new_question)
+    await session.commit()
+    return new_question
+

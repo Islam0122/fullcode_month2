@@ -4,15 +4,28 @@ from aiogram.types import Message, KeyboardButton, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
-
+from sqlalchemy.ext.asyncio import AsyncSession
+from db.orm_query_users import orm_add_user
 from .questions import questions
-
+from db.orm_query_user_stats import create_user_stats, read_user_stats,delete_user_stats,update_user_stats
 router_test = Router()
 
 
 class Test(StatesGroup):
     answering = State()
 
+@router_test.message(Command("all"))
+async def test(message: Message, session: AsyncSession):
+    await update_user_stats(session,8586756357,fullname="kelsinai",score=1000000)
+    a =await read_user_stats(session)
+    text = ""
+    for i in a:
+        text += (f"\n"
+                 f"{i.id}\n"
+                 f"{i.fullname}\n"
+                 f"{i.score}\n"
+                 f"----------")
+    await message.answer(text=text)
 
 @router_test.message(Command("test"))
 async def start_test(message: Message, state: FSMContext):
@@ -45,7 +58,7 @@ async def start_test(message: Message, state: FSMContext):
 
 
 @router_test.message(Test.answering)
-async def answering(message: Message, state: FSMContext):
+async def answering(message: Message, state: FSMContext,session: AsyncSession):
     data = await state.get_data()
     q_index = data["q_index"]
     score = data["score"]
@@ -71,6 +84,7 @@ async def answering(message: Message, state: FSMContext):
     q_index += 1
 
     if q_index >= len(questions):
+        await create_user_stats(session, message.from_user.id,message.from_user.first_name, score)
         await message.answer(
             f"🏁 Тест завершён!\n\n"
             f"Твой результат: {score} из {len(questions)}\n\n"
